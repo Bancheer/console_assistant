@@ -14,9 +14,14 @@ class Name(Field):
 
 
 class Phone(Field):
-    def validate(self, value):
-        if len(value) < 10 and len(value) > 10:
-            raise ValueError('Phone should be 10 symbols')
+    def __init__(self, value):
+        if not self.validate(value):
+            raise ValueError("Invalid phone number")
+        super().__init__(value)
+
+    @staticmethod
+    def validate(value):
+        return isinstance(value, str) and len(value) == 10 and value.isdigit()
 
 
 class Record:
@@ -33,10 +38,10 @@ class Record:
         if phone not in self.phones:
             self.phones.append(phone)
 
-    def find_phone(self, phone_number: str):
-        for phone in self.phones:
-            if phone.value == phone_number:
-                return phone_number
+    def find_phone(self, phone):
+        for phone_obj in self.phones:
+            if phone_obj.value == phone:
+                return phone_obj
 
     def edit_phone(self, old_phone, new_phone):
         phone_found = False
@@ -52,21 +57,21 @@ class Record:
             raise ValueError("Phone number not found in the list")
 
     def remove_phone(self, phone):
-        for i, phone in enumerate(self.phones):
-            if self.phones[i] == phone:
-                return phone.remove(phone)
-
+        for i in self.phones:
+            if i.value == phone:
+                self.phones.remove(i)
+                break
 
 class AddressBook(UserDict):
     def add_record(self, record: Record):
         self.data[record.name.value] = record
 
-    def find(self):
-        for phone in self.phones:
-            if phone.value == phone:
-                return phone
-        
+    def find(self, name):
+        if name in self.data:
+            return self.data[name]
+        else:
+            return None        
 
-    def delete(self):
-        # put your logic here
-        pass
+    def delete(self, name):
+        if name in self.data:
+            del self.data[name]
